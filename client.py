@@ -25,14 +25,16 @@ from instagrapi.exceptions import LoginRequired
 
 from os.path import isfile
 
-import logging
+from helpers import logutils
 
-logger = logging.getLogger()
-
+clientlogger = logutils.setup_logger('clientlogger', 'client.log')
 cl = Client()
+cl.delay_range = [1, 3]
 
 if isfile("session.json"):
+    
     session = cl.load_settings("session.json")  # type: ignore
+    clientlogger.info("Session file found, using Session file")
 
     try:
         cl.set_settings(session)
@@ -42,31 +44,28 @@ if isfile("session.json"):
             cl.get_timeline_feed()
 
         except LoginRequired:
-            logger.info("Session is invalid, need to login via username and password")
+            clientlogger.info("Session is invalid, recreating session file")
 
-            old_session = cl.get_settings()
+            from os import remove
 
-            # use the same device uuids across logins
-            cl.set_settings({})
-            cl.set_uuids(old_session["uuids"])
+            remove("session.json")
 
-            cl.login(tokens["username"], tokens["passowrd"])
+            cl.login(tokens["username"], tokens["password"])
+            cl.dump_settings("session.json")  # type: ignore
 
     except Exception as e:
-        
-        logger.info(f"Couldn't login user using session information: {e}")
+        clientlogger.error("Couldn't login user using session information: %s" % e)
 
 else:
-    
+    clientlogger.info("Session not found, creating session file")
+
+    cl.login(tokens["username"], tokens["password"])
+    cl.dump_settings("session.json")  # type: ignore
+
     try:
-        logger.info(f"Attempting to login via username and password. username: {tokens["username"]}")
-        
-        if cl.login(tokens["username"], tokens["password"]):
-            cl.dump_settings("session.json") # type: ignore
-            
+        cl.get_timeline_feed()
+
     except Exception as e:
-        logger.info(f"Couldn't login user using username and password: {e}")
+        clientlogger.error("Couldn't login user using login information: %s" % e)
 
-
-logger.info(f"Logged in to instagram as: {(cl.account_info().dict())["username"]}")
 print(f"Logged in to instagram as: {(cl.account_info().dict())["username"]}")

@@ -164,3 +164,4 @@ cython_debug/
 session.json
 config.ini
 /.vscode
+/test
