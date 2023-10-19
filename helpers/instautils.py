@@ -2,7 +2,12 @@ import binascii
 import os
 
 import pyotp
-from instagrapi.exceptions import BadPassword, LoginRequired, TwoFactorRequired
+from instagrapi.exceptions import (
+    BadPassword,
+    ChallengeRequired,
+    LoginRequired,
+    TwoFactorRequired,
+)
 
 from helpers.configutils import importconfig
 from helpers.logutils import clientlogger as logger
@@ -74,6 +79,12 @@ def login(client, mfa=False):
             client.get_timeline_feed()
             client.dump_settings("session.json")
 
+        except ChallengeRequired as e:
+            logger.error(
+                f"Rate limited: Complete captcha by using an official client: {e}"
+            )
+            client = None
+
         except Exception as e:
             logger.error(e)
             client = None
@@ -100,6 +111,12 @@ def login(client, mfa=False):
             client = login(client, mfa=True)
             client.get_timeline_feed()
             client.dump_settings("session.json")
+
+        except ChallengeRequired as e:
+            logger.error(
+                f"Rate limited: Complete captcha by using an official client: {e}"
+            )
+            client = None
 
         except Exception as e:
             logger.error(e)
