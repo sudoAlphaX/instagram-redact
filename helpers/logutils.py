@@ -15,7 +15,7 @@ def newLogger(name, log_file, level="INFO", overwrite=False):
         if path.exists(log_file):
             remove(log_file)
 
-    handler = logging.FileHandler(log_file)
+    handler = logging.FileHandler(log_file, encoding="utf-8")
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
