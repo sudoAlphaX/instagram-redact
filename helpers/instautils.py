@@ -40,7 +40,7 @@ def login(client, mfa=False):
         logger.debug("Session file found")
 
         try:
-            client.load_settings("session.json")  # type: ignore
+            client.load_settings("session.json")
             client.login(
                 credentials["username"],
                 credentials["password"],
@@ -61,7 +61,7 @@ def login(client, mfa=False):
                 verification_code=(get_2fa_code() if mfa else ""),
             )
             client.get_timeline_feed()
-            client.dump_settings("session.json")  # type: ignore
+            client.dump_settings("session.json")
 
         except BadPassword as e:
             logger.error(f"Bad password: {e}")
@@ -72,7 +72,7 @@ def login(client, mfa=False):
 
             client = login(client, mfa=True)
             client.get_timeline_feed()
-            client.dump_settings("session.json")  # type: ignore
+            client.dump_settings("session.json")
 
         except Exception as e:
             logger.error(e)
@@ -88,7 +88,7 @@ def login(client, mfa=False):
                 verification_code=(get_2fa_code() if mfa else ""),
             )
             client.get_timeline_feed()
-            client.dump_settings("session.json")  # type: ignore
+            client.dump_settings("session.json")
 
         except BadPassword as e:
             logger.error(f"Bad password: {e}")
@@ -99,7 +99,7 @@ def login(client, mfa=False):
 
             client = login(client, mfa=True)
             client.get_timeline_feed()
-            client.dump_settings("session.json")  # type: ignore
+            client.dump_settings("session.json")
 
         except Exception as e:
             logger.error(e)

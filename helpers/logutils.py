@@ -42,15 +42,12 @@ def translatelevel(level):
     return loglevel
 
 
-logconfig = importconfig("logs")
-
-
 joblogger = newLogger(
     "joblogger",
-    "job.log",  # type: ignore
+    "job.log",
     "INFO"
     if ((q := importconfig("logs")) == None)
-    else ("DEBUG" if str_to_bool(q.get("debug")) else "INFO"),  # type: ignore
+    else ("DEBUG" if str_to_bool(q.get("debug")) else "INFO"),
 )
 
 clientlogger = newLogger(
@@ -58,5 +55,5 @@ clientlogger = newLogger(
     "client.log",
     "INFO"
     if ((q := importconfig("logs")) == None)
-    else ("DEBUG" if str_to_bool(q.get("debug")) else "INFO"),  # type: ignore
+    else ("DEBUG" if str_to_bool(q.get("debug")) else "INFO"),
 )
