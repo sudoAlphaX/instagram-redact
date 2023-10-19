@@ -13,7 +13,3 @@ def str_to_bool(args):
 
     else:
         return None
-
-
-def get_config(section, key, default):
-    return default if ((q := importconfig((section))) == None) else (q.get(key))

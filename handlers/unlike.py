@@ -1,7 +1,8 @@
 from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
 
+from helpers.configutils import get_config
 from helpers.logutils import clientlogger, joblogger
-from helpers.stringutils import get_config, str_to_bool
+from helpers.stringutils import str_to_bool
 
 silent_mode = str_to_bool(get_config("logs", "silent", False))
 
