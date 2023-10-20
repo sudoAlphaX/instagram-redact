@@ -1,6 +1,6 @@
 import logging
 
-from helpers.configutils import importconfig
+from helpers.configutils import read_config
 from helpers.stringutils import str_to_bool
 
 formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
@@ -25,6 +25,9 @@ def newLogger(name, log_file, level="INFO", overwrite=False):
     return logger
 
 
+silent_mode = read_config("logs", "silent", False)
+
+
 def translatelevel(level):
     if level == "INFO":
         loglevel = logging.INFO
@@ -45,15 +48,11 @@ def translatelevel(level):
 joblogger = newLogger(
     "joblogger",
     "job.log",
-    "INFO"
-    if ((q := importconfig("logs")) == None)
-    else ("DEBUG" if str_to_bool(q.get("debug")) else "INFO"),
+    "INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
 )
 
 clientlogger = newLogger(
     "clientlogger",
     "client.log",
-    "INFO"
-    if ((q := importconfig("logs")) == None)
-    else ("DEBUG" if str_to_bool(q.get("debug")) else "INFO"),
+    "INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
 )

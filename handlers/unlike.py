@@ -1,10 +1,10 @@
 from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
 
-from helpers.configutils import get_config
+from helpers.configutils import read_config
 from helpers.logutils import clientlogger, joblogger
 from helpers.stringutils import str_to_bool
 
-silent_mode = str_to_bool(get_config("logs", "silent", False))
+silent_mode = str_to_bool(read_config("logs", "silent", False))
 
 
 def unlike_media(posts, client):
@@ -42,11 +42,11 @@ def unlike_all(client):
 
     while (status is True) and (
         liked_medias := client.liked_medias(
-            int(get_config("ratelimit", "max_fetch_count", 25))
+            int(read_config("ratelimit", "max_fetch_count", 25))
         )
     ):
         joblogger.info(
-            f"Fetching {int(get_config('ratelimit', 'max_fetch_count', 25))} recently liked posts"
+            f"Fetching {int(read_config('ratelimit', 'max_fetch_count', 25))} recently liked posts"
         )
 
         joblogger.debug(liked_medias)

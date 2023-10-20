@@ -2,19 +2,22 @@ import configparser
 import os
 
 
-def importconfig(args):
-    try:
-        if os.path.isfile("config.ini"):
-            config = configparser.ConfigParser()
-            config.read("config.ini")
-            return config[args]
+def read_config(section, key=None, fallback=None):
+    param = fallback
 
+    if os.path.isfile("config.ini"):
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        if key:
+            param = (
+                (config.get(section=section, option=key, fallback=fallback))
+                if section in config.sections()
+                else fallback
+            )
         else:
-            return None
+            param = (
+                dict((config[section])) if section in config.sections() else fallback
+            )
 
-    except:
-        return None
-
-
-def get_config(section, key, default):
-    return default if ((q := importconfig((section))) == None) else (q.get(key))
+    return param
