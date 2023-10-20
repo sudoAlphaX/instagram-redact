@@ -2,17 +2,18 @@ import sys
 
 from instagrapi import Client
 
-from helpers.configutils import get_config
+from helpers.configutils import read_config
 from helpers.instautils import login
 from helpers.logutils import clientlogger as logger
 from helpers.stringutils import str_to_bool
 
 cl = login(Client())
-cl.delay_range = [1, 3]
 
-silent_mode = str_to_bool(get_config('logs', 'silent', False))
+silent_mode = str_to_bool(read_config('logs', 'silent', False))
 
 if cl is not None:
+
+    cl.delay_range = [1, 3]
 
     if not silent_mode: print(f"Logged in to Instagram as: {(cl.account_info().dict())["username"]}")
 
