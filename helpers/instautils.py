@@ -9,33 +9,40 @@ from instagrapi.exceptions import (
     TwoFactorRequired,
 )
 
-from helpers.configutils import importconfig
+from helpers.configutils import read_config
 from helpers.logutils import clientlogger as logger
 
 
-def get_credentials():
-    if tokens := importconfig("credentials"):
-        return {"username": tokens["username"], "password": tokens["password"]}
+def get_credentials(username=True, password=True):
+    tokens = {"username": "username", "password": "password"}
 
-    else:
-        username = input("Enter your Instagram username: ")
-        password = input("Enter your Instagram password: ")
+    if username is True:
+        tokens["username"] = (
+            u
+            if ((u := read_config("credentials", "username")) is not None)
+            else input("Enter your Instagram username: ")
+        )
+    if password is True:
+        tokens["password"] = (
+            p
+            if ((p := read_config("credentials", "password")) is not None)
+            else input("Enter your Instagram password : ")
+        )
 
-        return {"username": username, "password": password}
+    return tokens
 
 
 def get_2fa_code():
-    if tokens := importconfig("credentials"):
-        if tokens.get("auth"):
-            otp = pyotp.TOTP(tokens["auth"].replace(" ", ""))
+    if tokens := (read_config("credentials", "auth")):
+        otp = pyotp.TOTP(tokens.replace(" ", ""))
 
-            try:
-                return otp.now()
+        try:
+            return otp.now()
 
-            except binascii.Error as e:
-                logger.error(f"2fa secret error: {e}")
+        except binascii.Error as e:
+            logger.error(f"2fa secret error: {e}")
 
-    return input("Enter your 2 factor authentication code: ")
+    return int(input("Enter your 2 factor authentication code: "))
 
 
 def login(client, mfa=False):
