@@ -8,8 +8,8 @@
   <p align="center">
     Take back your Instagram privacy
 
-[![Forks][forks-badge]][forks-url]
 [![Stargazers][stars-badge]][stars-url]
+[![Forks][forks-badge]][forks-url]
 [![Discussions][discussions-badge]][discussions-url]
 [![Issues][issues-badge]][issues-url]
 [![MIT License][license-badge]][license-url]
