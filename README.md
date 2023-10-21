@@ -1,8 +1,3 @@
-[![Forks][forks-badge]][forks-url]
-[![Stargazers][stars-badge]][stars-url]
-[![Discussions][discussions-badge]][discussions-url]
-[![Issues][issues-badge]][issues-url]
-[![MIT License][license-badge]][license-url]
 
 
 <div align="center">
@@ -12,11 +7,18 @@
 
   <p align="center">
     Take back your Instagram privacy
-    <br />
+
+[![Forks][forks-badge]][forks-url]
+[![Stargazers][stars-badge]][stars-url]
+[![Discussions][discussions-badge]][discussions-url]
+[![Issues][issues-badge]][issues-url]
+[![MIT License][license-badge]][license-url]
+
+  </p>
+    <p align="center">
     <a href="https://github.com/sudoAlphaX/instagram-redact"></a>
-    <br />
     <a href="https://github.com/sudoAlphaX/instagram-redact/issues">Report Bug</a>
-    ·
+    |
     <a href="https://github.com/sudoAlphaX/instagram-redact/discussions">Request Feature</a>
   </p>
 </div>
