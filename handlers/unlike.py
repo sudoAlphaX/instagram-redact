@@ -8,6 +8,22 @@ silent_mode = str_to_bool(read_config("logs", "silent", False))
 
 
 def unlike_media(posts, client):
+    """
+    The unlike_media function takes in a list of posts and an Instagrapi client object.
+    It then iterates through the list of posts, unliking each one. If it encounters
+    an error, it will log that error and return False.
+
+    Args:
+        posts: Pass in the list of posts to unlike
+        client: Authenticated Instagrapi Client object
+
+    Returns:
+        True if the media is unliked successfully or False if any error occurs
+
+    Doc Author:
+        Trelent
+    """
+
     for post in posts:
         try:
             client.media_unlike(post.id)
@@ -17,11 +33,11 @@ def unlike_media(posts, client):
             return False
 
         except ChallengeRequired:
-            clientlogger.error(f"Rate limited: Complete captcha by logging in to web")
+            clientlogger.error("Rate limited: Complete captcha by logging in to web")
             return False
 
         except Exception as e:
-            clientlogger.error(f"Unexpected error: {e}")
+            clientlogger.error("Unexpected error: %s", e)
             return False
 
         else:
@@ -37,15 +53,26 @@ def unlike_media(posts, client):
 
 
 def unlike_all(client):
+    """
+    The unlike_all function is used to unlike all of the media that you have liked.
+        This function will continue to unlike posts until there are no more posts left in your liked medias.
+
+    Args:
+        client: Instagrapi authenticated client object
+
+    Doc Author:
+        Trelent
+    """
+
     status = True
 
     while (status is True) and (
         liked_medias := client.liked_medias(
-            int(read_config("ratelimit", "max_fetch_count", 25))
+            read_config("ratelimit", "max_fetch_count", 25)
         )
     ):
         joblogger.info(
-            f"Fetching {int(read_config('ratelimit', 'max_fetch_count', 25))} recently liked posts"
+            f"Fetching last {read_config('ratelimit', 'max_fetch_count', 25)} liked posts"
         )
 
         joblogger.debug(liked_medias)
