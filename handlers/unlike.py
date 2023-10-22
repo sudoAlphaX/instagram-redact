@@ -1,7 +1,7 @@
 from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
 
 from helpers.configutils import read_config
-from helpers.logutils import clientlogger, joblogger
+from helpers.logutils import clientlogger, consolelog, joblogger
 from helpers.stringutils import str_to_bool
 
 silent_mode = str_to_bool(read_config("logs", "silent", False))
@@ -29,10 +29,9 @@ def unlike_media(posts, client):
                 f"Unliked post https://www.instagram.com/p/{post.code}/ by '{post.user.full_name}' (@{post.user.username}). Post id: {post.id}"
             )
 
-            if not silent_mode:
-                print(
-                    f"Unliked https://www.instagram.com/p/{post.code}/ by '{post.user.full_name}' (@{post.user.username})"
-                )
+            consolelog(
+                f"Unliked https://www.instagram.com/p/{post.code}/ by '{post.user.full_name}' (@{post.user.username})"
+            )
 
     return True
 

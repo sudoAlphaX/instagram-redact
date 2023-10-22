@@ -25,7 +25,23 @@ def newLogger(name, log_file, level="INFO", overwrite=False):
     return logger
 
 
-silent_mode = read_config("logs", "silent", False)
+silent_mode = str_to_bool(read_config("logs", "silent", False))
+
+
+def consolelog(args, read=False, fallback=None):
+    if not silent_mode:
+        if not read:
+            print(args)
+            return True
+        else:
+            return input(args)
+
+    else:
+        if read:
+            clientlogger.error(
+                f"Silent Mode enabled. '{args}' input skipped. Used '{fallback}' instead"
+            )
+        return fallback
 
 
 def translatelevel(level):
