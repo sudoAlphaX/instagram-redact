@@ -111,13 +111,13 @@ def translateloglevel(level):
 
 
 joblogger = newLogger(
-    "joblogger",
-    "job.log",
-    "INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
+    name="joblogger",
+    log_file="job.log",
+    level="INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
 )
 
 clientlogger = newLogger(
-    "clientlogger",
-    "client.log",
-    "INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
+    name="clientlogger",
+    log_file="client.log",
+    level="INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
 )
