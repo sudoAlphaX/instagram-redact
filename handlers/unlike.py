@@ -75,6 +75,10 @@ def unlike_all(client):
             f"Fetching last {read_config('ratelimit', 'max_fetch_count', 25)} liked posts"
         )
 
+        clientlogger.info(
+            f"Fetching last {read_config('ratelimit', 'max_fetch_count', 25)} liked posts"
+        )
+
         joblogger.debug(liked_medias)
 
         status = unlike_media(liked_medias, client)
