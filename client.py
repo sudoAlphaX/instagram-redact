@@ -11,7 +11,7 @@ cl = login(Client())
 
 if cl is not None:
     cl.delay_range = [
-        int(read_config("ratelimit", "min_delay", 1)),  # type: ignore
+        int(read_config("ratelimit", "min_delay", 2)),  # type: ignore
         int(read_config("ratelimit", "max_delay", 5)),  # type: ignore
     ]
 
