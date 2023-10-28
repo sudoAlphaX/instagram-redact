@@ -47,6 +47,7 @@ def unlike_media(posts, client):
 
         except ChallengeRequired:
             clientlogger.error("Rate limited: Complete captcha by logging in to web")
+
             status = {
                 "can_continue": False,
                 "rate_limited": True,
@@ -62,7 +63,7 @@ def unlike_media(posts, client):
                 "jobs": unprocessed_posts,
             }
             break
-
+            
         else:
             unprocessed_posts.remove(post)
 
@@ -92,6 +93,7 @@ def unlike_all(client):
     Doc Author:
         Trelent
     """
+
     status = {"can_continue": True, "rate_limited": False, "jobs": []}
     completed = False
     unlike_retries = 0
@@ -183,6 +185,7 @@ def unlike_all(client):
     #     clientlogger.info(
     #         f"Fetching last {read_config('ratelimit', 'max_fetch_count', 25)} liked posts"
     #     )
+
 
     #     joblogger.debug(liked_medias)
 
