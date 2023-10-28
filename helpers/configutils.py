@@ -38,3 +38,37 @@ def read_config(section, key=None, fallback=None):
             )
 
     return param
+
+
+def edit_config(section, key, value):
+    """
+    The edit_config function takes three arguments:
+        section - the section of the config file to edit
+        key - the key in that section to edit
+        value - what you want to set that key equal to
+
+    Args:
+        section: Specify the section in the config file
+        key: Specify the key of the value you want to change
+        value: Set the value of a key
+
+    Returns:
+        True if the file exists and false if it doesn't
+
+    Doc Author:
+        Trelent
+    """
+
+    if os.path.isfile("config.ini"):
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        config.set(section, key, value)
+
+        with open("config.ini", "w") as configfile:
+            config.write(configfile)
+
+        return True
+
+    else:
+        return False

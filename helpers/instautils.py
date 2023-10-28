@@ -1,17 +1,27 @@
 import binascii
 import os
+import random
+import time
 
 import pyotp
+from instagrapi import Client
 from instagrapi.exceptions import (
     BadPassword,
     ChallengeRequired,
+    FeedbackRequired,
     LoginRequired,
+    PleaseWaitFewMinutes,
+    RecaptchaChallengeForm,
+    ReloginAttemptExceeded,
+    SelectContactPointRecoveryForm,
     TwoFactorRequired,
 )
+from instagrapi.mixins.challenge import ChallengeChoice
 
-from helpers.configutils import read_config
+from helpers.configutils import edit_config, read_config
 from helpers.logutils import clientlogger as logger
-from helpers.logutils import consolelog
+from helpers.logutils import consolelog, newLogger, silent_mode
+from helpers.stringutils import str_to_bool
 
 
 def get_credentials(username=True, password=True):
@@ -53,6 +63,8 @@ def get_credentials(username=True, password=True):
             )
         )
 
+    logger.debug("Used username: %s", tokens["username"])
+
     return tokens
 
 
@@ -76,114 +88,239 @@ def get_2fa_code():
         except binascii.Error as e:
             logger.error("2fa secret error: %s", e)
 
-    return str(consolelog("Enter your 2 factor authentication code: ", read=True))
+    if not silent_mode:
+        logger.info("Prompting for 2fa code")
+
+        while True:
+            code = consolelog(
+                "Enter your 2 factor authentication code: ", read=True, fallback=None
+            )
+
+            if code and code.isdigit():  # type: ignore
+                return code
+
+    else:
+        logger.critical(
+            "2fa code required. Save 2fa secret in config.ini or disable silent_mode and enter the 2fa code"
+        )
+        return None
 
 
-def login(client, mfa=False):
+def get_code_from_sms(username):
     """
-    The login function is used to log into the Instagram API.
-        It will attempt to reuse a session (cookies) if it exists, otherwise it will create a new one.
-        If 2 factor authentication is enabled, the code is generated from the 2fa secret in config.ini or inputted manually by the user.
+    The get_code_from_sms function is used to prompt the user for the 6 digit code sent as an SMS.
 
     Args:
-        client: Pass the Client object to the login function
-        mfa: Determine if the user has 2fa enabled
+        username: Username of the Instagram account to display
 
     Returns:
-        An authenticated Client object
+        The code sent to the user's phone number
 
     Doc Author:
         Trelent
     """
 
-    credentials = get_credentials()
+    if not silent_mode:
+        logger.info("Prompting for verification code sent to SMS for: %s", username)
+
+        while True:
+            code = consolelog(
+                f"Enter the 6 digits code sent to your SMS for {username}: ",
+                read=True,
+                fallback=None,
+            )
+
+            if code and code.isdigit():  # type: ignore
+                return code
+    else:
+        logger.critical(
+            "Rate limited: Disable silent_mode and enter the 6 digit code sent to you as an SMS for %s",
+            username,
+        )
+        return None
+
+
+def challenge_code_handler(username, choice):
+    """
+    The challenge_code_handler function is called when the user has to enter a code sent by SMS or Email.
+    The function should return the code as string, or None if it could not be retrieved.
+
+    Args:
+        username: Identify the user for which a challenge is requested
+        choice: Determine whether the user has received the code via SMS or Email
+
+    Returns:
+        Verification code as a string or None
+
+    Doc Author:
+        Trelent
+    """
+
+    if choice == ChallengeChoice.SMS:
+        logger.info("Challenge choice SMS for username: %s", username)
+        return get_code_from_sms(username)
+
+    elif choice == ChallengeChoice.EMAIL:
+        logger.info("Challenge choice Email for username: %s", username)
+        return None
+
+    else:
+        logger.warning("Unknown challenge choice '%s' for %s", choice, username)
+        return None
+
+
+passwordlogger = newLogger(
+    name="passwordlogger", level="INFO", log_file="passwords.log"
+)
+
+
+def change_password_handler(username):
+    """
+    The change_password_handler function is called when the client has been rate limited.
+    It will either automatically generate a new password, or prompt the user for one.
+
+    Returns:
+        A password
+
+    Doc Author:
+        Trelent
+    """
+
+    if str_to_bool(read_config("ratelimit", "auto_change_password", False)):
+        logger.warning(
+            "Rate limited. Attempting to change password for username: %s", username
+        )
+
+        chars = list("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@")
+
+        password = "".join(random.sample(chars, 10))
+
+        if str_to_bool(read_config("ratelimit", "log_new_password", False)):
+            passwordlogger.info("New password: %s", password)
+
+    else:
+        logger.warning("Rate limited: Prompting for new password")
+
+        password = consolelog(
+            (
+                "Rate limited, enter a new password to be set for username %s (Use a strong password to avoid errors): ",
+                username,
+            ),
+            read=True,
+            fallback=None,
+        )
+
+    if password:
+        edit_config("credentials", "password", password)
+
+    return password
+
+
+def login(client=Client(), mfa=False, relogin_delay=1, relogin_attempt=0):
+    client.challenge_code_handler = challenge_code_handler  # type: ignore
+    client.change_password_handler = change_password_handler  # type: ignore
 
     if os.path.isfile("session.json"):
-        logger.info("Session file found, attempting to reuse session")
+        logger.info("Session found. Attempt to reuse session")
+
+        client.load_settings("session.json")  # type: ignore
 
         try:
-            client.load_settings("session.json")
-            client.login(
-                credentials["username"],
-                credentials["password"],
-                verification_code=(get_2fa_code() if mfa else ""),
-            )
+            tokens = get_credentials(False, False)
+            client.login(tokens["username"], tokens["password"])
             client.get_timeline_feed()
 
         except LoginRequired as e:
-            logger.info("Session invalid, attempt to create new session: %s", e)
+            logger.warning("Invalid session: %s", e)
 
             old_session = client.get_settings()
-            logger.debug("Using session settings: %s", old_session)
-
             client.set_settings({})
             client.set_uuids(old_session["uuids"])
-            client.relogin(
-                credentials["username"],
-                credentials["password"],
-                verification_code=(get_2fa_code() if mfa else ""),
-            )
-            client.get_timeline_feed()
-            client.dump_settings("session.json")
-
-        except BadPassword as e:
-            logger.error("Bad password: %s", e)
-            client = None
-
-        except TwoFactorRequired:
-            logger.info("2 factor authentication enabled")
-
-            client = login(client, mfa=True)
-            client.get_timeline_feed()
-            client.dump_settings("session.json")
-
-        except ChallengeRequired as e:
-            logger.error(
-                "Rate limited: Complete captcha by using an official client: %s", e
-            )
-            client = None
 
         except Exception as e:
-            logger.error("Exception raised: %s", e)
-            client = None
+            logger.warning("Error in reusing session: %s", e)
+            client.set_settings({})
 
-    else:
-        logger.info("Session file not found, attempt to create new session")
+        else:
+            logger.info(
+                "Session valid. Logged in to Instagram as: %s",
+                (client.account_info().dict()).get("username"),
+            )
+            return client
+
+    tokens = get_credentials()
+
+    try:
+        client.login(tokens["username"], tokens["password"], verification_code=(get_2fa_code() if mfa else ""))  # type: ignore
+        client.get_timeline_feed()
+
+    except BadPassword as e:
+        if relogin_attempt > 1:
+            logger.error("Bad Password (Possibly Instagram IP Blacklist): %s", e)
+            return None
+
+        else:
+            logger.error("Bad Password: %s", e)
+            client = login(client, relogin_attempt=(relogin_attempt + 1))
+
+    except LoginRequired as e:
+        logger.warning("Login Required exception. Attempt relogin: %s", e)
+        client.relogin()
+
+    except TwoFactorRequired as e:
+        logger.debug("2fa enabled, attempt to retrieve 2fa code: %s", e)
+        client = login(client, mfa=True)
+
+    except PleaseWaitFewMinutes as e:
+        logger.warning("Rate limited. Pausing for 5 minutes before relogin: %s", e)
+        consolelog(f"Rate limited. Pausing for 5 minutes: {e}")
+
+        time.sleep(300)
+
+        logger.info("Resuming login attempt")
+        client = login(client)
+
+    except ReloginAttemptExceeded as e:
+        logger.critical("Relogin attempt exceeded: %s", e)
+        client = None
+
+    except FeedbackRequired as e:
+        if (
+            "Your account has been temporarily blocked"
+            in client.last_json["feedback_message"]
+        ):
+            logger.critical(
+                "Rate limited: %s; %s", e, client.last_json["feedback_message"]
+            )
+
+            return None
+
+        else:
+            logger.error("Rate limited. Retrying in %d hours: %s", relogin_delay, e)
+            consolelog(f"Retrying in {relogin_delay} hours: {e}")
+
+            time.sleep(3600 * relogin_delay)
+
+            logger.info("Resuming login attempt")
+
+            relogin_delay += 1
+            client = login(client, relogin_delay=relogin_delay)
+
+    except ChallengeRequired as e:
+        logger.warning("Rate limited. Attempt to resolve challenge: %s", e)
 
         try:
-            client.login(
-                credentials["username"],
-                credentials["password"],
-                verification_code=(get_2fa_code() if mfa else ""),
-            )
+            client.challenge_resolve(client.last_json)
             client.get_timeline_feed()
-            client.dump_settings("session.json")
-
-        except BadPassword as e:
-            logger.error("Bad password: %s", e)
-            client = None
-
-        except TwoFactorRequired:
-            logger.info("2 factor authentication enabled")
-
-            try:
-                client = login(client, mfa=True)
-                client.get_timeline_feed()
-                client.dump_settings("session.json")
-
-            except Exception as e:
-                logger.error("Exception raised in 2fa verification: %s", e)
-                client = None
-
-        except ChallengeRequired as e:
-            logger.error(
-                "Rate limited: Complete captcha by using an official client: %s", e
-            )
-            client = None
 
         except Exception as e:
-            logger.error("Unknown Exception raised: %s", e)
-            client = None
+            logger.critical("Failed to resolve challenge: %s", e)
+            return None
 
-    logger.debug(client)
+        else:
+            return client
+
+    else:
+        return client
+
     return client

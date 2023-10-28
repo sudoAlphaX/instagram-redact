@@ -6,10 +6,14 @@ from helpers.instautils import login
 from helpers.logutils import clientlogger as logger
 from helpers.logutils import consolelog
 
-cl = login(Client())
+cl = Client()
+cl = login(cl)
 
 if cl is not None:
-    cl.delay_range = [1, 3]
+    cl.delay_range = [
+        int(read_config("ratelimit", "min_delay", 2)),  # type: ignore
+        int(read_config("ratelimit", "max_delay", 5)),  # type: ignore
+    ]
 
     consolelog(
         f"Logged in to Instagram as: {(cl.account_info().dict()).get('username')}"
