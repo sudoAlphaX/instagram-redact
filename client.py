@@ -7,7 +7,8 @@ from helpers.instautils import login
 from helpers.logutils import clientlogger as logger
 from helpers.logutils import consolelog
 
-cl = login(Client())
+cl = Client()
+cl = login(cl)
 
 if cl is not None:
     cl.delay_range = [
