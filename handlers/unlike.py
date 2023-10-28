@@ -92,7 +92,6 @@ def unlike_all(client):
     Doc Author:
         Trelent
     """
-
     status = {"can_continue": True, "rate_limited": False, "jobs": []}
     completed = False
     unlike_retries = 0
@@ -153,15 +152,15 @@ def unlike_all(client):
             # unlike_retries += 1
 
         else:
-            if (
-                len(
-                    liked_medias := client.liked_medias(
-                        fetch_count := read_config("ratelimit", "max_fetch_count", 25)
-                    )
+            joblogger.debug(
+                "Fetching last {} liked posts".format(
+                    fetch_count := read_config("ratelimit", "max_fetch_count", 25),
                 )
-                > 0  # noqa: W503
-            ):
-                joblogger.debug(f"Fetching last {fetch_count} liked posts")
+            )
+
+            joblogger.debug(liked_medias := client.liked_medias(fetch_count))
+
+            if len(liked_medias) > 0:
                 status = unlike_media(liked_medias, client)
 
             else:
