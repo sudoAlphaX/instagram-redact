@@ -63,7 +63,7 @@ def unlike_media(posts, client):
                 "jobs": unprocessed_posts,
             }
             break
-            
+
         else:
             unprocessed_posts.remove(post)
 
@@ -185,7 +185,6 @@ def unlike_all(client):
     #     clientlogger.info(
     #         f"Fetching last {read_config('ratelimit', 'max_fetch_count', 25)} liked posts"
     #     )
-
 
     #     joblogger.debug(liked_medias)
 

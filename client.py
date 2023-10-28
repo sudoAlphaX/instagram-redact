@@ -2,6 +2,7 @@ import sys
 
 from instagrapi import Client
 
+from helpers.configutils import read_config
 from helpers.instautils import login
 from helpers.logutils import clientlogger as logger
 from helpers.logutils import consolelog

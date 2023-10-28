@@ -217,6 +217,22 @@ def change_password_handler(username):
 
 
 def login(client=Client(), mfa=False, relogin_delay=1, relogin_attempt=0):
+    """
+    The login function is used to log into Instagram.
+
+    Args:
+        client: Pass the client object to the function
+        mfa: Determine if 2fa is enabled or not
+        relogin_delay: Increase the time between login attempts per recursion
+        relogin_attempt: Determine if the login attempt should be retried
+
+    Returns:
+        A client object
+
+    Doc Author:
+        Trelent
+    """
+
     client.challenge_code_handler = challenge_code_handler  # type: ignore
     client.change_password_handler = change_password_handler  # type: ignore
 
