@@ -45,8 +45,10 @@ def unlike_media(posts, client):
             }
             break
 
-        except ChallengeRequired:
-            clientlogger.error("Rate limited: Complete captcha by logging in to web")
+        except ChallengeRequired as e:
+            clientlogger.error(
+                "Rate limited: Complete captcha by logging in to web: %s", e
+            )
 
             status = {
                 "can_continue": False,

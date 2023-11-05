@@ -121,3 +121,5 @@ clientlogger = newLogger(
     log_file="client.log",
     level="INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
 )
+
+clientlogger.info("====================START====================")

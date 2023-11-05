@@ -258,10 +258,7 @@ def login(client=Client(), mfa=False, relogin_delay=1, relogin_attempt=0):
             client.set_settings({})
 
         else:
-            logger.info(
-                "Session valid. Logged in to Instagram as: %s",
-                (client.account_info().dict()).get("username"),
-            )
+            logger.info("Session valid")
             return client
 
     tokens = get_credentials()
@@ -298,7 +295,7 @@ def login(client=Client(), mfa=False, relogin_delay=1, relogin_attempt=0):
 
     except ReloginAttemptExceeded as e:
         logger.critical("Relogin attempt exceeded: %s", e)
-        client = None
+        return None
 
     except FeedbackRequired as e:
         if (
@@ -334,9 +331,9 @@ def login(client=Client(), mfa=False, relogin_delay=1, relogin_attempt=0):
             return None
 
         else:
-            return client
+            client.dump_settings("session.json")  # type: ignore
 
     else:
-        return client
+        client.dump_settings("session.json")  # type: ignore
 
     return client
