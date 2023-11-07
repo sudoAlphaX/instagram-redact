@@ -1,6 +1,13 @@
+import datetime
 import json
 import os
 import pickle
+import time
+
+from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
+
+from helpers.configutils import read_config
+from helpers.logutils import clientlogger, consolelog, joblogger
 
 
 def format_export(file="export/liked_posts.json"):
@@ -68,3 +75,107 @@ def get_liked_medias():
 
 pending_liked_medias = get_liked_medias()
 
+
+def unlike_media(client):
+    clientlogger.debug("Attempt to unlike %s posts", len(pending_liked_medias))  # type: ignore
+
+    status = {"can_continue": True, "rate_limited": False, "jobs": []}
+
+    for post in pending_liked_medias:  # type: ignore
+        try:
+            media_id = client.media_id(client.media_pk_from_url(post))
+            client.media_unlike(media_id)
+
+        except FeedbackRequired as e:
+            clientlogger.error(f"Rate limited: {e}")
+            status = {
+                "can_continue": True,
+                "rate_limited": True,
+            }
+            break
+
+        except ChallengeRequired as e:
+            clientlogger.error(
+                "Rate limited: Complete captcha by logging in to web: %s", e
+            )
+
+            status = {
+                "can_continue": False,
+                "rate_limited": True,
+            }
+            break
+
+        except Exception as e:
+            clientlogger.error("Unexpected error: %s", e)
+            status = {
+                "can_continue": False,
+                "rate_limited": False,
+            }
+            break
+
+        else:
+            joblogger.info(
+                f"Unliked post {post['url']} by '{post['author']}'. Post id: {media_id}"
+            )
+
+            consolelog(
+                f"Unliked https://www.instagram.com/p/{post.code}/ by '{post['author']}'"
+            )
+
+            pending_liked_medias.pop(0)  # type: ignore
+
+    return status
+
+
+def unlike_all(client):
+    status = {"can_continue": True, "rate_limited": False}
+    completed = False
+    unlike_retries = 0
+
+    while status["can_continue"]:
+        if status["rate_limited"]:
+            # if len(status['jobs'] > 0):
+
+            if unlike_retries >= int(read_config("ratelimit", "unlike_retries", 3)):  # type: ignore
+                break
+
+            while unlike_retries < int(
+                read_config("ratelimit", "unlike_retries", 3)  # type: ignore
+            ):  # max delay = 16 minutes
+                clientlogger.warning(
+                    "Rate limited: Pausing unlike requests for %s seconds. Resuming at %s",
+                    (secs := (60 * (mins := int(read_config("ratelimit", "unlike_delay", 10)) * (unlike_retries + 1)))),  # type: ignore
+                    (
+                        resumetime := (
+                            datetime.datetime.now() + datetime.timedelta(seconds=secs)
+                        ).strftime("%H:%M:%S")
+                    ),
+                )
+
+                consolelog(
+                    args="Rate limited: Pausing unlike requests for %s minutes. Resuming at %s"
+                    % (
+                        mins,
+                        resumetime,
+                    )
+                )
+
+                time.sleep(secs)
+
+                status = unlike_media(client)
+
+                unlike_retries += 1
+
+        else:
+            if len(pending_liked_medias) > 0:  # type: ignore
+                status = unlike_media(client)
+
+            else:
+                completed = True
+                break
+
+    return {
+        "completed": completed,
+        "can_continue": status["can_continue"],
+        "rate_limited": status["rate_limited"],
+    }
