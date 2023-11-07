@@ -128,6 +128,7 @@ You can currently run this tool on your local machine.
 ## Roadmap
 
 - [x] Unlike all liked posts
+  - [ ] Unlike posts from export file
 - [ ] Delete all comments
 - [ ] Unlike all liked comments
 - [ ] Unsend all messages in a chat
