@@ -5,9 +5,6 @@ from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
 
 from helpers.configutils import read_config
 from helpers.logutils import clientlogger, consolelog, joblogger
-from helpers.stringutils import str_to_bool
-
-silent_mode = str_to_bool(read_config("logs", "silent", False))
 
 
 def unlike_media(posts, client):
