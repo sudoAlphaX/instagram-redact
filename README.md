@@ -1,5 +1,4 @@
 
-
 <div align="center">
   <a href="https://github.com/sudoAlphaX/instagram-redact">  </a>
 
@@ -22,7 +21,6 @@
     <a href="https://github.com/sudoAlphaX/instagram-redact/discussions">Request Feature</a>
   </p>
 </div>
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -51,23 +49,19 @@
   </ol>
 </details>
 
-
 ## About The Project
 
 Instagram Redact is used to remove your digital footprint from Instagram. This tool allows you to remove your activity from Instagram.
-
 
 ### Inspiration
 
 Instagram's in-built feature to remove your digital footprint from Instagram is not good. It has a lot of rate limits and the official client doesn't allow you to perform more than 100 actions.
 Hence, this tool was developed to facilitate the process of removing your activity from Instagram
 
-
 ### Built Using
 
 * [![Python][python-badge]][python-url]
 * [![Instagrapi][instagrapi-badge]][instagrapi-url]
-
 
 ## Getting Started
 
@@ -77,70 +71,70 @@ You can currently run this tool on your local machine.
 
 * Python >= 3.9
 
-
 ### Installation
 
 1. Clone the repo
+
    ```
    git clone https://github.com/sudoAlphaX/instagram-redact.git
    ```
 
 2. Change to the directory
+
     ```sh
     cd instagram-redact
     ```
 
 3. Create a Python virtual environment
+
     ```
     python -m venv venv
     ```
 
 4. Activate the virtual environment
+
     ```sh
     venv\Scripts\activate.bat
     ```
 
 5. Install required packages
+
     ```sh
     pip install -r requirements.txt
     ```
-
 
 ## Usage
 
 1. Rename sampleconfig.ini to config.ini and fill in the details
 
-2. Activate virtual environment
+2. Under the `[tasks]` section of config.ini, set whether to fetch the liked posts list from Instagram, or use Instagram export file _[(How to use export file?)](https://github.com/sudoalphax/instagram-redact/blob/main/handlers/README.md)_
+
+3. Activate virtual environment
+
     ```sh
     venv\Scripts\activate.bat
     ```
 
-3. Run main.py
+4. Run main.py
 
-* You can create a batch file to run the main.py and save it in the startup folder. Paste the following lines in the batch file:
-
-    ```
-    cd path\to\directory\instagam-redact
-    venv\Scripts\python.exe main.py
-    ```
-
+* You can create a task to run the main.py on system startup:
 
 ## Roadmap
 
-- [x] Unlike all liked posts
-- [ ] Delete all comments
-- [ ] Unlike all liked comments
-- [ ] Unsend all messages in a chat
-- [ ] Delete all comments on your post
-- [ ] Delete all posts
-  - [ ] Delete all individual type of post (Photo, Video, Reel, etc)
-- [ ] Delete all highlights
-- [ ] Delete all collections
-- [X] Simplified Login Process
-  - [ ] Multi-account support
-- [ ] Uninterupted running
-  - [ ] Cloud server support
-
+* [x] Unlike all liked posts
+  * [x] Unlike posts from export file
+* [ ] Delete all comments
+* [ ] Unlike all liked comments
+* [ ] Unsend all messages in a chat
+* [ ] Delete all comments on your post
+* [ ] Delete all posts
+  * [ ] Delete all individual type of post (Photo, Video, Reel, etc)
+* [ ] Delete all highlights
+* [ ] Delete all collections
+* [X] Simplified Login Process
+  * [ ] Multi-account support
+* [ ] Uninterrupted running
+  * [ ] Cloud server support
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -156,11 +150,9 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
 
 ## Contact
 
@@ -168,15 +160,11 @@ Alpha - [@sudoAlphaX](https://twitter.com/sudoAlphaX)
 
 Repo Link: [https://github.com/sudoAlphaX/instagram-redact](https://github.com/sudoAlphaX/instagram-redact)
 
-
 ## Acknowledgments
 
 * [subzeroid (Instagrapi)](https://github.com/subzeroid/instagrapi)
 
 * [othneildrew (README Template)](https://github.com/othneildrew/Best-README-Template)
-
-[contributors-badge]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [forks-badge]: https://img.shields.io/github/forks/sudoalphax/instagram-redact

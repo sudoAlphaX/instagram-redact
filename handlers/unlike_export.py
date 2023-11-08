@@ -11,6 +11,20 @@ from helpers.logutils import clientlogger, consolelog, joblogger
 
 
 def format_export(file="export/liked_posts.json"):
+    """
+    The format_export function takes a file path as an argument and returns a list of dictionaries.
+    The function opens the file, loads it into memory, and then iterates through each item in the Instagram export file.
+    It appends to a list with a dictionary containing two keys: url and author.
+
+    Args:
+        file: Specify the Instagram export file
+
+    Returns:
+        A list of dictionaries with two keys: url and author
+
+    Doc Author:
+        Trelent
+    """
     with open(file) as json_file:
         data = json.load(json_file)
 
@@ -30,6 +44,19 @@ def format_export(file="export/liked_posts.json"):
 
 
 def write_dump(var, file="temp/remaining_posts.dump"):
+    """
+    The write_dump function takes a variable and writes it to a file using pickle.
+
+    Args:
+        var: Store the data to be written
+        file: Specify the file path to write the dump to
+
+    Returns:
+        None
+
+    Doc Author:
+        Trelent
+    """
     if subdirectory := os.path.dirname(file):
         os.makedirs(subdirectory, exist_ok=True)
 
@@ -38,6 +65,19 @@ def write_dump(var, file="temp/remaining_posts.dump"):
 
 
 def read_dump(file="temp/remaining_posts.dump"):
+    """
+    The read_dump function reads the dump file and returns a list of posts.
+
+    Args:
+        file: Specify the file to read from
+
+    Returns:
+        A list of dictionaries
+
+    Doc Author:
+        Trelent
+    """
+
     clientlogger.debug("Attempt to read temp/remaining_posts.dump")
 
     with open(file, "rb") as dump_file:
@@ -47,6 +87,18 @@ def read_dump(file="temp/remaining_posts.dump"):
 
 
 def get_liked_medias():
+    """
+    The get_liked_medias function is responsible for reading the liked_posts.json file and returning a list of dictionaries containing information about each post that has been liked by the user.
+
+    Args:
+
+    Returns:
+        A list of dictionaries
+
+    Doc Author:
+        Trelent
+    """
+
     if os.path.exists("temp/remaining_posts.dump"):
         return read_dump()
 
@@ -75,9 +127,26 @@ pending_liked_medias = get_liked_medias()
 
 
 def unlike_media(client):
+    """
+    The unlike_media function is responsible for unliking posts.
+    It uses the global variable 'pending_liked_medias' to determine the list of posts to unlike.
+        It takes a client object as an argument and returns a status dictionary with two keys:
+            can_continue - True if the function was able to unlike all posts, False otherwise.
+            rate_limited - True if the function was unable to unlike all posts due to being rate limited, False otherwise.
+
+    Args:
+        client: Pass the client object to the function
+
+    Returns:
+        The status dict
+
+    Doc Author:
+        Trelent
+    """
+
     clientlogger.debug("Attempt to unlike %s posts", len(pending_liked_medias))  # type: ignore
 
-    status = {"can_continue": True, "rate_limited": False, "jobs": []}
+    status = {"can_continue": True, "rate_limited": False}
 
     for post in pending_liked_medias:  # type: ignore
         try:
@@ -128,6 +197,21 @@ def unlike_media(client):
 
 
 def unlike_all(client):
+    """
+    The unlike_all function is used to unlike all of the posts that you have liked.
+        This function will continue to run until there are no more posts left in your feed.
+        The function will also pause for a period of time if it encounters an error from Instagram's API due to rate limiting.
+
+    Args:
+        client: Pass the client object to the function
+
+    Returns:
+        A dictionary with the following keys: completed, can_continue and rate_limited.
+
+    Doc Author:
+        Trelent
+    """
+
     status = {"can_continue": True, "rate_limited": False}
     completed = False
     unlike_retries = 0
