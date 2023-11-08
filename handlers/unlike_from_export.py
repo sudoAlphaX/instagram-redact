@@ -29,9 +29,8 @@ def format_export(file="export/liked_posts.json"):
     return liked_medias_urls
 
 
-def dump_variable(var, file="temp/remaining_posts.dump"):
+def write_dump(var, file="temp/remaining_posts.dump"):
     if subdirectory := os.path.dirname(file):
-        clientlogger.debug("'temp' directory absent. Attempt to create directory")
         os.makedirs(subdirectory, exist_ok=True)
 
     with open(file, "wb") as dump_file:
@@ -56,8 +55,7 @@ def get_liked_medias():
             clientlogger.debug(
                 "'export/liked_posts.json found'. Attempt to dump data to 'temp/remaining_posts.dump'"
             )
-
-            dump_variable(liked_medias := format_export())
+            write_dump(liked_medias := format_export())
 
             clientlogger.info(
                 "Processed 'liked_posts.json' export file. Renaming to 'old_liked_posts.json'"
@@ -70,7 +68,7 @@ def get_liked_medias():
                 "'liked_posts.json' not found in export directory. Paste the .json file. Read README for more help."
             )
 
-            return None
+            return []
 
 
 pending_liked_medias = get_liked_medias()
@@ -83,7 +81,7 @@ def unlike_media(client):
 
     for post in pending_liked_medias:  # type: ignore
         try:
-            media_id = client.media_id(client.media_pk_from_url(post))
+            media_id = client.media_id(client.media_pk_from_url(post["url"]))
             client.media_unlike(media_id)
 
         except FeedbackRequired as e:
@@ -118,11 +116,13 @@ def unlike_media(client):
                 f"Unliked post {post['url']} by '{post['author']}'. Post id: {media_id}"
             )
 
-            consolelog(
-                f"Unliked https://www.instagram.com/p/{post.code}/ by '{post['author']}'"
-            )
+            consolelog(f"Unliked {post['url']} by '{post['author']}'")
 
-            pending_liked_medias.pop(0)  # type: ignore
+            pending_liked_medias.remove(post)  # type: ignore
+            joblogger.debug("Removed %s from global list", post)
+
+            clientlogger.debug("Dumping 'pending_liked_medias 'variable: Number of items: %s", len(pending_liked_medias))  # type: ignore
+            write_dump(var=pending_liked_medias)
 
     return status
 
