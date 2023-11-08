@@ -165,3 +165,5 @@ session.json
 config.ini
 /.vscode
 /test
+/temp
+/export
