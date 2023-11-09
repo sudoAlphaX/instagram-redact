@@ -4,7 +4,14 @@ import os
 import pickle
 import time
 
-from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
+from instagrapi.exceptions import (
+    ChallengeRequired,
+    FeedbackRequired,
+    InvalidMediaId,
+    MediaError,
+    MediaNotFound,
+    MediaUnavailable,
+)
 
 from helpers.configutils import read_config
 from helpers.logutils import clientlogger, consolelog, joblogger
@@ -172,6 +179,9 @@ def unlike_media(client):
             }
             break
 
+        except (MediaNotFound, InvalidMediaId, MediaUnavailable, MediaError) as e:
+            joblogger.info(("Media '%s' not found: %s") % (post["url"], e))
+
         except Exception as e:
             clientlogger.error("Unexpected error: %s", e)
             status = {
@@ -187,11 +197,11 @@ def unlike_media(client):
 
             consolelog(f"Unliked {post['url']} by '{post['author']}'")
 
-            pending_liked_medias.remove(post)  # type: ignore
-            joblogger.debug("Removed %s from global list", post)
+        pending_liked_medias.remove(post)  # type: ignore
+        joblogger.debug("Removed %s from global list", post)
 
-            clientlogger.debug("Dumping 'pending_liked_medias 'variable: Number of items: %s", len(pending_liked_medias))  # type: ignore
-            write_dump(var=pending_liked_medias)
+        clientlogger.debug("Dumping 'pending_liked_medias 'variable: Number of items: %s", len(pending_liked_medias))  # type: ignore
+        write_dump(var=pending_liked_medias)
 
     return status
 
