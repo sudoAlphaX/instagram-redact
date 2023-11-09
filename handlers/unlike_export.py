@@ -197,11 +197,11 @@ def unlike_media(client):
 
             consolelog(f"Unliked {post['url']} by '{post['author']}'")
 
-            pending_liked_medias.remove(post)  # type: ignore
-            joblogger.debug("Removed %s from global list", post)
+        pending_liked_medias.remove(post)  # type: ignore
+        joblogger.debug("Removed %s from global list", post)
 
-            clientlogger.debug("Dumping 'pending_liked_medias 'variable: Number of items: %s", len(pending_liked_medias))  # type: ignore
-            write_dump(var=pending_liked_medias)
+        clientlogger.debug("Dumping 'pending_liked_medias 'variable: Number of items: %s", len(pending_liked_medias))  # type: ignore
+        write_dump(var=pending_liked_medias)
 
     return status
 
