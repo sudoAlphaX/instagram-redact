@@ -4,7 +4,14 @@ import os
 import pickle
 import time
 
-from instagrapi.exceptions import ChallengeRequired, FeedbackRequired
+from instagrapi.exceptions import (
+    ChallengeRequired,
+    FeedbackRequired,
+    InvalidMediaId,
+    MediaError,
+    MediaNotFound,
+    MediaUnavailable,
+)
 
 from helpers.configutils import read_config
 from helpers.logutils import clientlogger, consolelog, joblogger
@@ -171,6 +178,9 @@ def unlike_media(client):
                 "rate_limited": True,
             }
             break
+
+        except (MediaNotFound, InvalidMediaId, MediaUnavailable, MediaError) as e:
+            joblogger.info(("Media '%s' not found: %s") % (post["url"], e))
 
         except Exception as e:
             clientlogger.error("Unexpected error: %s", e)
