@@ -1,6 +1,8 @@
 import configparser
 import os
 
+from helpers.stringutils import str_to_bool
+
 
 def read_config(section, key=None, fallback=None):
     """
@@ -28,7 +30,12 @@ def read_config(section, key=None, fallback=None):
 
         if key:
             param = (
-                (config.get(section=section, option=key, fallback=fallback))
+                (
+                    str_to_bool(
+                        config.get(section=section, option=key, fallback=fallback),
+                        fallback=True,
+                    )
+                )
                 if section in config.sections()
                 else fallback
             )

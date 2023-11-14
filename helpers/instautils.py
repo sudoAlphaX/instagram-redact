@@ -21,7 +21,6 @@ from instagrapi.mixins.challenge import ChallengeChoice
 from helpers.configutils import edit_config, read_config
 from helpers.logutils import clientlogger as logger
 from helpers.logutils import consolelog, newLogger, silent_mode
-from helpers.stringutils import str_to_bool
 
 
 def get_credentials(username=True, password=True):
@@ -186,7 +185,7 @@ def change_password_handler(username):
         Trelent
     """
 
-    if str_to_bool(read_config("ratelimit", "auto_change_password", False)):
+    if read_config("ratelimit", "auto_change_password", False):
         logger.warning(
             "Rate limited. Attempting to change password for username: %s", username
         )
@@ -195,7 +194,7 @@ def change_password_handler(username):
 
         password = "".join(random.sample(chars, 10))
 
-        if str_to_bool(read_config("ratelimit", "log_new_password", False)):
+        if read_config("ratelimit", "log_new_password", False):
             passwordlogger.info("New password: %s", password)
 
     else:
