@@ -1,20 +1,22 @@
 import configparser
 import os
 
+from helpers.stringutils import str_to_bool
 
-def read_config(section, key=None, fallback=None):
+
+def read_config(section, key, fallback=None):
     """
-    The read_config function reads the config.ini file and returns a key
-        from the specified section and key, or all keys in that section if no
-        key is provided. If no config file exists, it will return None by default.
+    The read_config function reads the config.ini file and returns a boolean value
+    based on the section and key provided. If no config file is found, or if the
+    section/key does not exist in the config file, then it will return True by default.
 
     Args:
         section: Specify the section of the config file to read from
-        key: Get a specific key from the config file
-        fallback: Set a default value if the config file is not found or the section/key does not exist
+        key: Specify the key in the config file
+        fallback: Return a set value if the key is not found in the config file
 
     Returns:
-        key as string or all keys of a section as a dict
+        A boolean value
 
     Doc Author:
         Trelent
@@ -26,16 +28,42 @@ def read_config(section, key=None, fallback=None):
         config = configparser.ConfigParser()
         config.read("config.ini")
 
-        if key:
-            param = (
-                (config.get(section=section, option=key, fallback=fallback))
-                if section in config.sections()
-                else fallback
+        param = (
+            (
+                str_to_bool(
+                    config.get(section=section, option=key, fallback=fallback),
+                    fallback=True,
+                )
             )
-        else:
-            param = (
-                dict((config[section])) if section in config.sections() else fallback
-            )
+            if section in config.sections()
+            else fallback
+        )
+
+    return param
+
+
+def read_section(section, fallback={}):
+    """
+    The read_section function reads the config.ini file and returns a dictionary of the keys of section specified in the first argument.
+    If no such section exists, it will return an empty dictionary.
+
+    Args:
+        section: Specify the section in the config
+        fallback: Set default values for the parameters in case they are not found in the config
+
+    Returns:
+        A dictionary of the section in config
+
+    Doc Author:
+        Trelent
+    """
+    param = fallback
+
+    if os.path.isfile("config.ini"):
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        param = dict((config[section])) if section in config.sections() else fallback
 
     return param
 

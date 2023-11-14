@@ -1,7 +1,6 @@
 import logging
 
 from helpers.configutils import read_config
-from helpers.stringutils import str_to_bool
 
 formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
@@ -44,7 +43,7 @@ def newLogger(name, log_file, level="INFO", overwrite=False):
     return logger
 
 
-silent_mode = str_to_bool(read_config("logs", "silent", False))
+silent_mode = read_config("logs", "silent", False)
 
 
 def consolelog(args, read=False, fallback=None):
@@ -113,13 +112,13 @@ def translateloglevel(level):
 joblogger = newLogger(
     name="joblogger",
     log_file="job.log",
-    level="INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
+    level="INFO" if not read_config("logs", "debug", False) else "DEBUG",
 )
 
 clientlogger = newLogger(
     name="clientlogger",
     log_file="client.log",
-    level="INFO" if not str_to_bool(read_config("logs", "debug", False)) else "DEBUG",
+    level="INFO" if not read_config("logs", "debug", False) else "DEBUG",
 )
 
 clientlogger.info("====================START====================")
