@@ -7,18 +7,22 @@ from helpers.configutils import read_config
 from helpers.logutils import clientlogger, consolelog, joblogger
 
 
-def unlike_media(posts, client):
+def unlike_media(posts, client, score=0):
     """
-    The unlike_media function takes in a list of posts and an Instagrapi client object.
-    It then iterates through the list of posts, unliking each one. If it encounters
-    an error, it will log that error and return False.
+    The unlike_media function takes a list of posts, an Instagram client, and a score.
+    It attempts to unlike each post in the list using the provided client. If it is successful,
+    it removes that post from the unprocessed_posts list and logs its success to both joblogger
+    and consolelog. It also decrements score by 1 if it is greater than 0 (to prevent negative scores).
+    If there are any errors or exceptions during this process, they are logged with error level messages
+    to both joblogger and consolelog. If it is rate limited, the score is incremented by 10.
 
     Args:
-        posts: Pass in the list of posts to unlike
-        client: Authenticated Instagrapi Client object
+        posts: Pass the list of posts to unlike
+        client: Pass the client object to the function
+        score: Determine the rate limit delays
 
     Returns:
-        True if the media is unliked successfully or False if any error occurs
+        A dictionary with the following keys: can_continue, rate_limited and score
 
     Doc Author:
         Trelent
@@ -27,7 +31,7 @@ def unlike_media(posts, client):
     clientlogger.debug("Attempt to unlike %s posts", len(posts))
 
     unprocessed_posts = posts
-    status = {"can_continue": True, "rate_limited": False, "jobs": []}
+    status = {"can_continue": True, "rate_limited": False, "score": score}
 
     for post in posts:
         try:
@@ -35,11 +39,7 @@ def unlike_media(posts, client):
 
         except FeedbackRequired as e:
             clientlogger.error(f"Rate limited: {e}")
-            status = {
-                "can_continue": True,
-                "rate_limited": True,
-                "jobs": unprocessed_posts,
-            }
+            status = {"can_continue": True, "rate_limited": True, "score": score + 10}
             break
 
         except ChallengeRequired as e:
@@ -50,7 +50,6 @@ def unlike_media(posts, client):
             status = {
                 "can_continue": False,
                 "rate_limited": True,
-                "jobs": unprocessed_posts,
             }
             break
 
@@ -59,11 +58,12 @@ def unlike_media(posts, client):
             status = {
                 "can_continue": False,
                 "rate_limited": False,
-                "jobs": unprocessed_posts,
             }
             break
 
         else:
+            status["score"] = score - 1 if score > 0 else score
+
             unprocessed_posts.remove(post)
 
             joblogger.info(
@@ -77,7 +77,55 @@ def unlike_media(posts, client):
     return status
 
 
-def unlike_all(client):
+def unlike_all(client, score=0):
+    """
+    The unlike_all function is used to unlike all of the posts that you have liked.
+        It will return a status object with the following properties:
+            completed - A boolean indicating whether or not it has finished unliking all of your posts.
+            can_continue - A boolean indicating whether or not it can continue unliking your posts (if there are more).
+            rate_limited - A boolean indicating if you have been rate limited by Instagram for liking too many times in a row.
+                If this happens, wait until the next day and try again!
+
+    Args:
+        client: Pass the client object to the function
+        score: Determine the rate limit delays
+
+    Returns:
+        A dictionary
+
+    Doc Author:
+        Trelent
+    """
+
+    status = {"can_continue": True, "rate_limited": False, "score": score}
+
+    while status["can_continue"] and not status["rate_limited"]:
+        joblogger.debug(
+            "Fetching last {} liked posts".format(
+                fetch_count := read_config("ratelimit", "max_fetch_count", 25),
+            )
+        )
+
+        pending_liked_medias = client.liked_medias(fetch_count)
+
+        if len(pending_liked_medias) > 0:
+            joblogger.debug(pending_liked_medias)
+
+            status = unlike_media(client, score)
+            status["completed"] = False
+
+        else:
+            status = {
+                "completed": True,
+                "can_continue": False,
+                "rate_limited": False,
+                "score": score,
+            }
+
+    return status
+
+
+def old_unlike_all(client):
     """
     The unlike_all function is used to unlike all of the posts that you have liked.
         This function will continue to run until there are no more posts left in your feed.
