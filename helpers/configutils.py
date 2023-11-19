@@ -1,7 +1,16 @@
 import configparser
 import os
 
+from helpers.logutils import clientlogger
 from helpers.stringutils import str_to_bool
+
+if os.path.isfile("config.ini"):
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+else:
+    clientlogger.warn("config.ini file missing. Will attempt to use default values")
+    config = None
 
 
 def read_config(section, key, fallback=None):
@@ -22,13 +31,16 @@ def read_config(section, key, fallback=None):
         Trelent
     """
 
-    param = fallback
+    global config
 
-    if os.path.isfile("config.ini"):
-        config = configparser.ConfigParser()
-        config.read("config.ini")
+    if config is not None:
+        if read_config(
+            "logs", "debug", False
+        ):  # If in debug mode, read the file for every access to change values during runtime
+            config = configparser.ConfigParser()
+            config.read("config.ini")
 
-        param = (
+        return (
             (
                 str_to_bool(
                     config.get(section=section, option=key, fallback=fallback),
@@ -39,7 +51,8 @@ def read_config(section, key, fallback=None):
             else fallback
         )
 
-    return param
+    else:
+        return fallback
 
 
 def read_section(section, fallback={}):
@@ -57,15 +70,20 @@ def read_section(section, fallback={}):
     Doc Author:
         Trelent
     """
-    param = fallback
 
-    if os.path.isfile("config.ini"):
-        config = configparser.ConfigParser()
-        config.read("config.ini")
+    global config
 
-        param = dict((config[section])) if section in config.sections() else fallback
+    if config is not None:
+        if read_config(
+            "logs", "debug", False
+        ):  # If in debug mode, read the file for every config read request to change values during runtime
+            config = configparser.ConfigParser()
+            config.read("config.ini")
 
-    return param
+        return dict((config[section])) if section in config.sections() else fallback
+
+    else:
+        return fallback
 
 
 def edit_config(section, key, value):
@@ -87,10 +105,7 @@ def edit_config(section, key, value):
         Trelent
     """
 
-    if os.path.isfile("config.ini"):
-        config = configparser.ConfigParser()
-        config.read("config.ini")
-
+    if config is not None:
         config.set(section, key, value)
 
         with open("config.ini", "w") as configfile:
