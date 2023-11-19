@@ -133,39 +133,36 @@ def get_liked_medias():
 pending_liked_medias = get_liked_medias()
 
 
-def unlike_media(client):
+def unlike_media(client, score=0):
     """
-    The unlike_media function is responsible for unliking posts.
-    It uses the global variable 'pending_liked_medias' to determine the list of posts to unlike.
-        It takes a client object as an argument and returns a status dictionary with two keys:
-            can_continue - True if the function was able to unlike all posts, False otherwise.
-            rate_limited - True if the function was unable to unlike all posts due to being rate limited, False otherwise.
+    The unlike_media function is used to unlike posts that have been previously liked.
+        It takes two arguments: client and score. The client argument is the authenticated
+        InstagramAPI object, while the score argument represents a number of likes that
+        should be performed before unliking any posts.
 
     Args:
-        client: Pass the client object to the function
+        client: Access the instagram api
+        score: Determine if the bot should continue to unlike posts
 
     Returns:
-        The status dict
+        A dictionary with three keys: can_continue, rate_limited and score
 
     Doc Author:
         Trelent
     """
 
-    clientlogger.debug("Attempt to unlike %s posts", len(pending_liked_medias))  # type: ignore
+    clientlogger.debug("Attempt to unlike %s posts", len(pending_liked_medias))
 
-    status = {"can_continue": True, "rate_limited": False}
+    status = {"can_continue": True, "rate_limited": False, "score": score}
 
-    for post in pending_liked_medias:  # type: ignore
+    for post in pending_liked_medias:
         try:
             media_id = client.media_id(client.media_pk_from_url(post["url"]))
             client.media_unlike(media_id)
 
         except FeedbackRequired as e:
             clientlogger.error(f"Rate limited: {e}")
-            status = {
-                "can_continue": True,
-                "rate_limited": True,
-            }
+            status = {"can_continue": True, "rate_limited": True, "score": score + 10}
             break
 
         except ChallengeRequired as e:
@@ -197,7 +194,9 @@ def unlike_media(client):
 
             consolelog(f"Unliked {post['url']} by '{post['author']}'")
 
-        pending_liked_medias.remove(post)  # type: ignore
+            status["score"] = score - 1 if score > 0 else score
+
+        pending_liked_medias.remove(post)
         joblogger.debug("Removed %s from global list", post)
 
         clientlogger.debug("Dumping 'pending_liked_medias 'variable: Number of items: %s", len(pending_liked_medias))  # type: ignore
@@ -206,7 +205,41 @@ def unlike_media(client):
     return status
 
 
-def unlike_all(client):
+def unlike_all(client, score=0):
+    """
+    The unlike_all function is used to unlike all the media that you have liked.
+        It will return a status object with the following properties:
+            completed: True if it has finished unliking all of your liked media, False otherwise.
+            can_continue: True if it can continue unliking more of your liked media, False otherwise.
+            rate_limited: True if you are being rate limited by Instagram and should stop calling this function for a while, False otherwise.
+
+    Args:
+        client: Access the instagram api
+        score: Determine the rate limit delays
+
+    Returns:
+        A dictionary with the following keys: completed, can_continue, rate_limited and score
+
+    Doc Author:
+        Trelent
+    """
+
+    if len(pending_liked_medias) > 0:
+        status = unlike_media(client, score)
+        status["completed"] = False
+
+    else:
+        status = {
+            "completed": True,
+            "can_continue": False,
+            "rate_limited": False,
+            "score": score,
+        }
+
+    return status
+
+
+def old_unlike_all(client):
     """
     The unlike_all function is used to unlike all of the posts that you have liked.
         This function will continue to run until there are no more posts left in your feed.
