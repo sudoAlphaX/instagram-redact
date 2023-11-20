@@ -133,8 +133,8 @@ You can currently run this tool on your local machine.
 * [ ] Delete all collections
 * [X] Simplified Login Process
   * [ ] Multi-account support
-* [ ] Uninterrupted running
-  * [ ] Cloud server support
+* [x] Uninterrupted running
+  * [x] Cloud server support
 
 <!-- CONTRIBUTING -->
 ## Contributing
