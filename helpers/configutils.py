@@ -1,7 +1,6 @@
 import configparser
 import os
 
-from helpers.logutils import clientlogger
 from helpers.stringutils import str_to_bool
 
 if os.path.isfile("config.ini"):
@@ -9,7 +8,6 @@ if os.path.isfile("config.ini"):
     config.read("config.ini")
 
 else:
-    clientlogger.warn("config.ini file missing. Will attempt to use default values")
     config = None
 
 
@@ -34,8 +32,8 @@ def read_config(section, key, fallback=None):
     global config
 
     if config is not None:
-        if read_config(
-            "logs", "debug", False
+        if str_to_bool(
+            config.get(section=section, option="debug", fallback=False)
         ):  # If in debug mode, read the file for every access to change values during runtime
             config = configparser.ConfigParser()
             config.read("config.ini")
@@ -74,8 +72,8 @@ def read_section(section, fallback={}):
     global config
 
     if config is not None:
-        if read_config(
-            "logs", "debug", False
+        if str_to_bool(
+            config.get(section=section, option="debug", fallback=False)
         ):  # If in debug mode, read the file for every config read request to change values during runtime
             config = configparser.ConfigParser()
             config.read("config.ini")
