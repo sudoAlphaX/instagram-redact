@@ -248,9 +248,9 @@ def login(client=Client(), mfa=False, relogin_delay=1, relogin_attempt=0):
         except LoginRequired as e:
             logger.warning("Invalid session: %s", e)
 
-            old_session = client.get_settings()
+            # old_session = client.get_settings()
             client.set_settings({})
-            client.set_uuids(old_session["uuids"])
+            # client.set_uuids(old_session["uuids"])
 
         except Exception as e:
             logger.warning("Error in reusing session: %s", e)
