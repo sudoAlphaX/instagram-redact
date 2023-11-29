@@ -54,7 +54,8 @@ def main():
 
         delay = (
             (
-                (int(read_config("ratelimit", "base_delay", 60)) * 60)  # type: ignore
+                (int(read_config("ratelimit", "base_delay", 60)))  # type: ignore
+                * 60
                 * pow(
                     float(read_config("ratelimit", "multiplier", 2)),  # type: ignore
                     float(minimum_score / 100),
@@ -67,7 +68,7 @@ def main():
         clientlogger.info(
             "Pausing code execution for %s secs. Resuming at %s",
             delay,
-            resume := datetime.datetime.now() + datetime.timedelta(minutes=delay),
+            resume := datetime.datetime.now() + datetime.timedelta(seconds=delay),
         )
 
         consolelog(
