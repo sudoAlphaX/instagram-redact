@@ -11,6 +11,7 @@
 [![Forks][forks-badge]][forks-url]
 [![Discussions][discussions-badge]][discussions-url]
 [![Issues][issues-badge]][issues-url]
+![Last Commit Badge][last-commit-badge]
 [![MIT License][license-badge]][license-url]
 
   </p>
@@ -171,6 +172,7 @@ Repo Link: [https://github.com/sudoAlphaX/instagram-redact](https://github.com/s
 [forks-url]: https://github.com/sudoalphax/instagram-redact/network/members
 [stars-badge]: https://img.shields.io/github/stars/sudoalphax/instagram-redact
 [stars-url]: https://github.com/sudoalphax/instagram-redact/stargazers
+[last-commit-badge]: https://img.shields.io/github/last-commit/sudoalphax/instagram-redact/main
 [issues-badge]: https://img.shields.io/github/issues/sudoalphax/instagram-redact
 [issues-url]: https://github.com/sudoalphax/instagram-redact/issues
 [discussions-badge]: https://img.shields.io/github/discussions/sudoalphax/instagram-redact
