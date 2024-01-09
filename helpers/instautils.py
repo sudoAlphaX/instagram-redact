@@ -161,7 +161,8 @@ def challenge_code_handler(username, choice):
 
     elif choice == ChallengeChoice.EMAIL:
         logger.info("Challenge choice Email for username: %s", username)
-        return None
+        ecode = input("Enter verification code sent to your registered Email id: ")
+        return ecode
 
     else:
         logger.warning("Unknown challenge choice '%s' for %s", choice, username)
